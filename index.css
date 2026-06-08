@@ -2590,7 +2590,9 @@ figure figcaption {
       color: #037ef3; }
 
 .blog-entry .blog-entry-text .post-meta {
-  color: #b3b3b3; }
+  color: #5f6368;
+  font-weight: 500;
+}
 
 .block-testimony-1 {
   padding: 20px; }
@@ -2798,3 +2800,5 @@ body:not(.offcanvas-menu) a.js-menu-toggle .hamburger-lines .line {
 footer.site-footer {
   contain: layout style;
 }
+
+
