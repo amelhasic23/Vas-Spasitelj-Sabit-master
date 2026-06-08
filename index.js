@@ -1,6 +1,20 @@
-document.addEventListener("DOMContentLoaded", function () {
-	if (!window.jQuery) {
+function initSiteScripts(attempt) {
+	var retryCount = attempt || 0;
+	if (!window.jQuery || !window.jQuery.fn || typeof window.jQuery.fn.owlCarousel !== 'function') {
+		if (retryCount < 40) {
+			window.setTimeout(function () {
+				initSiteScripts(retryCount + 1);
+			}, 100);
+		}
 		return;
+	}
+
+	if (document.body && document.body.dataset.siteScriptsInitialized === 'true') {
+		return;
+	}
+
+	if (document.body) {
+		document.body.dataset.siteScriptsInitialized = 'true';
 	}
 
 	var $ = window.jQuery;
@@ -24,6 +38,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		$('body').removeClass('offcanvas-menu');
 		$('.js-menu-toggle').removeClass('active');
+	}
+
+	function onNextFrame(callback) {
+		if (typeof window.requestAnimationFrame === 'function') {
+			window.requestAnimationFrame(callback);
+			return;
+		}
+
+		window.setTimeout(callback, 0);
 	}
 
 	function initMobileMenu() {
@@ -50,21 +73,49 @@ document.addEventListener("DOMContentLoaded", function () {
 		});
 	}
 
-	function bindCarouselA11y($carousel) {
-		$carousel.on('initialized.owl.carousel changed.owl.carousel refreshed.owl.carousel', function () {
-			var $dots = $(this).find('.owl-dot');
-			var total = $dots.length;
+	function applyCarouselA11y($carousel, carouselLabel) {
+		var $dots = $carousel.find('.owl-dot');
+		var total = $dots.length;
+		var dotPrefix = carouselLabel || 'Karusel';
 
-			$dots.each(function (index) {
-				this.setAttribute('aria-label', 'Slajd ' + (index + 1) + ' od ' + total);
-			});
+		$carousel.attr('aria-label', dotPrefix);
+
+		$dots.each(function (index) {
+			var isActive = this.classList.contains('active');
+			this.setAttribute('type', 'button');
+			this.setAttribute('aria-label', dotPrefix + ': prikaži slajd ' + (index + 1) + ' od ' + total);
+			this.setAttribute('aria-current', isActive ? 'true' : 'false');
+			this.setAttribute('title', 'Slajd ' + (index + 1));
 		});
+
+		var prevButton = $carousel.find('.owl-prev').get(0);
+		if (prevButton) {
+			prevButton.setAttribute('type', 'button');
+			prevButton.setAttribute('aria-label', dotPrefix + ': prethodni slajd');
+		}
+
+		var nextButton = $carousel.find('.owl-next').get(0);
+		if (nextButton) {
+			nextButton.setAttribute('type', 'button');
+			nextButton.setAttribute('aria-label', dotPrefix + ': sljedeći slajd');
+		}
+	}
+
+	function bindCarouselA11y($carousel, carouselLabel) {
+		var refreshA11y = function () {
+			onNextFrame(function () {
+				applyCarouselA11y($carousel, carouselLabel);
+			});
+		};
+
+		$carousel.on('initialized.owl.carousel changed.owl.carousel refreshed.owl.carousel translated.owl.carousel', refreshA11y);
+		refreshA11y();
 	}
 
 	function initCarousels() {
 		var $aboutCarousel = $('.about-carousel');
 		if ($aboutCarousel.length) {
-			bindCarouselA11y($aboutCarousel);
+			bindCarouselA11y($aboutCarousel, 'Galerija o meni');
 			$aboutCarousel.owlCarousel({
 				items: 1,
 				loop: true,
@@ -80,7 +131,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		var $multiCarousels = $('.nonloop-block-13');
 		if ($multiCarousels.length) {
-			bindCarouselA11y($multiCarousels);
+			bindCarouselA11y($multiCarousels.eq(0), 'Proces treninga');
+			bindCarouselA11y($multiCarousels.eq(1), 'Usluge');
 			$multiCarousels.owlCarousel({
 				center: false,
 				items: 1,
@@ -101,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		var $testimonialsCarousel = $('.owl-carousel-one');
 		if ($testimonialsCarousel.length) {
-			bindCarouselA11y($testimonialsCarousel);
+			bindCarouselA11y($testimonialsCarousel, 'Svjedočanstva klijenata');
 			$testimonialsCarousel.owlCarousel({
 				center: false,
 				items: 1,
@@ -209,4 +261,10 @@ document.addEventListener("DOMContentLoaded", function () {
 	initStickyHeader();
 	initOnePageNavigation();
 	initScrollState();
-});
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initSiteScripts);
+} else {
+	initSiteScripts();
+}

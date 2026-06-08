@@ -608,13 +608,10 @@
     <link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23037ef3'/%3E%3Cpath d='M50 75 C50 75 20 55 20 37 C20 27 28 20 38 20 C43 20 48 23 50 27 C52 23 57 20 62 20 C72 20 80 27 80 37 C80 55 50 75 50 75Z' fill='white'/%3E%3C/svg%3E">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4N8RGP3ZRR"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-4N8RGP3ZRR');
+            window.gtag = gtag;
     </script>
 </head>
 
@@ -1356,6 +1353,45 @@
                 showCursor: true
             });
         });
+    </script>
+
+    <script>
+        (function () {
+            var measurementId = 'G-4N8RGP3ZRR';
+            var analyticsLoaded = false;
+            var interactionEvents = ['pointerdown', 'keydown', 'touchstart'];
+
+            function removeInteractionListeners() {
+                interactionEvents.forEach(function (eventName) {
+                    window.removeEventListener(eventName, loadAnalytics, listenerOptions);
+                });
+            }
+
+            function configureAnalytics() {
+                gtag('js', new Date());
+                gtag('config', measurementId);
+            }
+
+            function loadAnalytics() {
+                if (analyticsLoaded) {
+                    return;
+                }
+
+                analyticsLoaded = true;
+                removeInteractionListeners();
+
+                var script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
+                script.onload = configureAnalytics;
+                document.head.appendChild(script);
+            }
+
+            var listenerOptions = { once: true, passive: true };
+            interactionEvents.forEach(function (eventName) {
+                window.addEventListener(eventName, loadAnalytics, listenerOptions);
+            });
+        }());
     </script>
 
     
